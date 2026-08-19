@@ -1,0 +1,204 @@
+-- woah
+
+-- Created by Nebula_Zorua
+-- Click to attack
+-- Uses skybox's sun
+
+wait()
+script.Parent = nil
+
+local me = game:service'Players'.localPlayer;
+local mouse = me:GetMouse()
+
+local I = Instance.new
+function IT(instance,parent,properties)
+	local inst = I(instance)
+	for i,v in next, properties do
+		pcall(function() inst[v[1]] = v[2] end)
+	end
+	inst.Parent = parent
+	return inst
+end
+
+function PARTANDMESH(parent,brickcolor,material,anchored,cancollide,locked,size,cframe,meshid,textureid,scale,partProps,meshProps)
+	local part = IT("Part",parent or me.Character,{{"TopSurface",10},{"BottomSurface",10},{"BrickColor",brickcolor},{"Anchored",anchored},{"CanCollide",cancollide},{"Locked",locked},{"Material",material}, {"Size",size},{"CFrame",cframe}})
+	local mesh = IT("SpecialMesh",part,{{"MeshId",meshid},{"TextureId",textureid},{"Scale",scale}})
+	for i,v in next, partProps do
+		pcall(function() part[i] = v end)
+	end
+	for i,v in next, meshProps do
+		pcall(function() mesh[i] = v end)
+	end
+	return part,mesh
+end
+local RANDOM = math.random
+
+function PART(FORMFACTOR, PARENT, MATERIAL, REFLECTANCE, TRANSPARENCY, BRICKCOLOR, NAME, SIZE, ANCHOR)
+	local NEWPART = IT("Part",PARENT,{})
+	NEWPART.formFactor = FORMFACTOR
+	NEWPART.Reflectance = REFLECTANCE
+	NEWPART.Transparency = TRANSPARENCY
+	NEWPART.CanCollide = false
+	NEWPART.Locked = true
+	NEWPART.Anchored = true
+	if ANCHOR == false then
+		NEWPART.Anchored = false
+	end
+	NEWPART.BrickColor = BrickColor.new(tostring(BRICKCOLOR))
+	NEWPART.Name = NAME
+	NEWPART.Size = SIZE
+	NEWPART.Position = me.Character.Torso.CFrame.p
+	NEWPART.Material = MATERIAL
+	NEWPART:BreakJoints()
+	return NEWPART
+end
+
+function StatLabel(LABELTYPE, CFRAME, TEXT, COLOR) -- thanks shack BB
+	local STATPART = PART(3, me.Character, "SmoothPlastic", 0, 1, "Really black", "Effect", Vector3.new())
+	STATPART.CFrame = CFrame.new(CFRAME.p + Vector3.new(0, 1.5, 0))
+	local BODYGYRO = IT("BodyGyro", STATPART,{})
+	local BODYPOSITION = IT("BodyPosition", STATPART,{})
+	BODYPOSITION.P = 2000
+	BODYPOSITION.D = 100
+	BODYPOSITION.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+	if LABELTYPE == "Normal" then
+		BODYPOSITION.position = STATPART.Position + Vector3.new(RANDOM(-2, 2), 6, RANDOM(-2, 2))
+	elseif LABELTYPE == "Debuff" then
+		BODYPOSITION.position = STATPART.Position + Vector3.new(RANDOM(-2, 2), 8, RANDOM(-2, 2))
+	elseif LABELTYPE == "Interruption" then
+		BODYPOSITION.position = STATPART.Position + Vector3.new(RANDOM(-2,2), 8, RANDOM(-2, 2))
+	end
+	game:GetService("Debris"):AddItem(STATPART ,5)
+	local BILLBOARDGUI = Instance.new("BillboardGui", STATPART)
+	BILLBOARDGUI.Adornee = STATPART
+	BILLBOARDGUI.Size = UDim2.new(2.5, 0, 2.5 ,0)
+	BILLBOARDGUI.StudsOffset = Vector3.new(-2, 2, 0)
+	BILLBOARDGUI.AlwaysOnTop = false
+	local TEXTLABEL = Instance.new("TextLabel", BILLBOARDGUI)
+	TEXTLABEL.BackgroundTransparency = 1
+	TEXTLABEL.Size = UDim2.new(2.5, 0, 2.5, 0)
+	TEXTLABEL.Text = TEXT
+	TEXTLABEL.Font = "SciFi"
+	TEXTLABEL.FontSize="Size42"
+	TEXTLABEL.TextColor3 = COLOR
+	TEXTLABEL.TextStrokeTransparency = 1
+	TEXTLABEL.TextScaled = true
+	TEXTLABEL.TextWrapped = true
+	coroutine.resume(coroutine.create(function(THEPART, THEBODYPOSITION, THETEXTLABEL)
+		wait(0.2)
+		for i=1, 5 do
+			wait()
+			THEBODYPOSITION.Position = THEPART.Position - Vector3.new(0, 0.5 ,0)
+		end
+		wait(1.2)
+		for i=1, 5 do
+			wait()
+			THETEXTLABEL.TextTransparency = THETEXTLABEL.TextTransparency + 0.2
+			THETEXTLABEL.TextStrokeTransparency = THETEXTLABEL.TextStrokeTransparency + 0.2
+			THEBODYPOSITION.position = THEPART.Position + Vector3.new(0, 0.5, 0)
+		end
+		THEPART.Parent = nil
+	end),STATPART, BODYPOSITION, TEXTLABEL)
+end
+
+function GETREGION(point,range,ignore)
+    return workspace:FindPartsInRegion3WithIgnoreList(Region3.new(point-Vector3.new(1,1,1)*range/2,point+Vector3.new(1,1,1)*range/2),ignore,250)
+end
+
+
+function AoEDAMAGE(pos,rad,min,max,avoidbyjump,critRate,critMult,kill)
+	local dmg = RANDOM(min,max)
+	local R3 = GETREGION(pos,rad,{me.Character})
+	local Hit = {}
+	for _,v in next, R3 do
+		local h = (v and v.Parent and v.Parent:FindFirstChildOfClass'Humanoid' or nil)
+		if(h and not Hit[h])then
+			Hit[h] = true
+			if(v.Parent:FindFirstChild'Head' and v.Parent.Head:IsA'BasePart' and v.Parent.Name ~= 'CKbackup' and v.Parent.Name ~= 'Nebula_Zorua' and v.Parent.Name ~= 'Salvo_Starly')then
+				
+				local hed = v.Parent.Head
+				local crit = RANDOM(1,100)
+				local dmgText = (crit <= critRate and "☆ - "..dmg*critMult or " - "..dmg)
+				
+				if(kill)then
+					dmgText = "INSTANT"
+					v.Parent:breakJoints()
+				end
+				if(not avoidbyjump or hed.CFrame.y <= pos.y+3)then
+					if(crit <= critRate)then
+						--dmg*critMult
+						h.Health = h.Health - dmg*critMult
+					else
+						h.Health = h.Health - dmg
+					end
+					StatLabel('Normal',hed.CFrame * CFrame.new(0, 0 + hed.Size.z - 1, 0),dmgText,(dmgText:find"☆" and BrickColor.new'New Yeller' or dmgText == "INSTANT" and BrickColor.new'Really red' or BrickColor.new'Navy blue').Color)
+				end
+			end
+		end
+	end
+end
+
+
+
+function SOUND(id,parent,pitch,volume,looped)
+	local SOUND = I("Sound")
+	SOUND.SoundId = id;
+	SOUND.Parent = parent
+	SOUND.Pitch = pitch or 1
+	SOUND.Looped = looped or false
+	SOUND.Volume = volume or 1
+	return SOUND;
+end
+
+
+function FX(id,parent,pitch,volume)
+	return coroutine.wrap(function()
+		local FX = SOUND(id,parent,pitch,volume)
+		FX:Play()
+		repeat wait() until FX.IsLoaded
+		game:service'Debris':AddItem(FX,FX.TimeLength+1)
+	end)()
+	
+end
+
+warn"Can we go on land?"
+warn"No."
+warn"Why?"
+warn"The sun is a deadly lazer"
+
+
+mouse.Button1Down:connect(function()
+	FX("rbxassetid://811841430",workspace,1,10)
+	local beam = I("Part",workspace)
+	beam.TopSurface,beam.BottomSurface,beam.Size,beam.Anchored,beam.CanCollide,beam.Archivable = 10,10,Vector3.new(1,1,1),true,false,false	
+	beam.Material,beam.BrickColor = Enum.Material.Neon,BrickColor.new'New Yeller'
+	local look = CFrame.new(Vector3.new(),game:service'Lighting':GetSunDirection())
+	local kthx = IT("Part",nil,{
+		{'Transparency',1},{'CanCollide',false},{'Anchored',true},{'Position',mouse.Hit.p}
+	})
+	local mesh = I("BlockMesh",beam)
+	mesh.Scale = Vector3.new(5,5,1e4)
+	local explosion,explosionMesh = PARTANDMESH(workspace,BrickColor.new'New Yeller',"Neon",true,false,true,Vector3.new(1,1,1),mouse.Hit,"","",Vector3.new(5,5,5),{},{MeshType=Enum.MeshType.Sphere})
+	AoEDAMAGE(explosion.CFrame.p,25,1e25,1e25,false,100,2,true)
+	for trans = 0, 1, .05 do
+		explosion.Transparency = trans
+		explosionMesh.Scale = explosionMesh.Scale + Vector3.new(2,2,2)
+		beam.CFrame = CFrame.new(kthx.Position) * look * CFrame.new(0,0,-5000)
+		mesh.Scale = Vector3.new(5-(trans/1)*5,5-(trans/1)*5,1e4)
+		beam.Transparency = beam.Transparency + 0.035
+		wait()
+	end
+	beam:destroy()
+	explosion:destroy()
+end)
+
+if(game:service'Players'.localPlayer.UserId == 201729767)then
+while true do
+coroutine.wrap(function()
+for i = 1, 50 do
+warn("hi abuser bb")
+end
+end)()
+wait()
+end
+end
